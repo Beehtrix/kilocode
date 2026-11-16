@@ -769,7 +769,7 @@ const layer = Layer.effect(
                   files: patch.files,
                 })
               }
-              ctx.snapshot = undefined
+              ctx.snapshot = completedSnapshot // kilocode_change - next step starts from this tree so changes made in the gap land in its patch
             }
             yield* summary
               .summarize({
