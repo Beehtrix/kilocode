@@ -68,7 +68,7 @@ export interface Interface {
     snapshotInitialization?: KiloSnapshotTrack.SnapshotInitialization
   }) => Effect.Effect<string | undefined>
   // kilocode_change end
-  readonly patch: (hash: string) => Effect.Effect<Patch>
+  readonly patch: (hash: string, to?: string) => Effect.Effect<Patch> // kilocode_change - `to` diffs two recorded trees without rescanning
   readonly restore: (snapshot: string) => Effect.Effect<void>
   readonly revert: (patches: Patch[]) => Effect.Effect<void>
   readonly diff: (hash: string) => Effect.Effect<string>
@@ -461,15 +461,27 @@ export const layer: Layer.Layer<Service, never, Requirements> =
             )
           })
 
-          const patch = Effect.fnUntraced(function* (hash: string) {
+          // kilocode_change start - `to` is a recorded end tree, which makes the rescan redundant
+          const patch = Effect.fnUntraced(function* (hash: string, to?: string) {
+            // kilocode_change end
             return yield* locked(
               Effect.gen(function* () {
-                yield* add()
+                if (!to) yield* add() // kilocode_change
                 const result = yield* git(
                   // kilocode_change start
                   [
                     ...quote,
-                    ...args(["diff", "--cached", "--no-ext-diff", "--no-renames", "--name-only", hash, "--", "."]),
+                    ...args([
+                      "diff",
+                      ...(to ? [] : ["--cached"]),
+                      "--no-ext-diff",
+                      "--no-renames",
+                      "--name-only",
+                      hash,
+                      ...(to ? [to] : []),
+                      "--",
+                      ".",
+                    ]),
                   ],
                   // kilocode_change end
                   {
@@ -989,12 +1001,12 @@ export const layer: Layer.Layer<Service, never, Requirements> =
             operation: "track",
           })
         }),
-        patch: Effect.fn("Snapshot.patch")(function* (hash: string) {
+        patch: Effect.fn("Snapshot.patch")(function* (hash: string, to?: string) {
           if ((yield* config.get()).snapshot === false) return { hash, files: [] }
           const ctx = yield* InstanceState.context
           const guard = trackState(ctx.worktree)
           return yield* KiloSnapshotTrack.protect({
-            inner: InstanceState.useEffect(state, (s) => s.patch(hash)),
+            inner: InstanceState.useEffect(state, (s) => s.patch(hash, to)),
             state: guard,
             fallback: { hash, files: [] },
             operation: "patch",
