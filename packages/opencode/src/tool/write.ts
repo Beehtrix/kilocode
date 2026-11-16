@@ -17,6 +17,7 @@ import { filterDiagnostics } from "./diagnostics" // kilocode_change
 import { ConfigValidation } from "../kilocode/config-validation" // kilocode_change
 import * as EncodedIO from "../kilocode/tool/encoded-io" // kilocode_change
 import { assertMutablePath } from "../kilocode/agent-manager/protection" // kilocode_change
+import { editPatternPath } from "../kilocode/permission/edit-path" // kilocode_change
 import * as Bom from "@/util/bom"
 
 const MAX_PROJECT_DIAGNOSTICS_FILES = 5
@@ -63,7 +64,7 @@ export const WriteTool = Tool.define(
           const filediff = buildFileDiff(filepath, contentOld, contentNew) // kilocode_change
           yield* ctx.ask({
             permission: "edit",
-            patterns: [path.relative(instance.worktree, filepath)],
+            patterns: [editPatternPath(instance, filepath)], // kilocode_change
             always: ["*"],
             metadata: {
               filepath,
