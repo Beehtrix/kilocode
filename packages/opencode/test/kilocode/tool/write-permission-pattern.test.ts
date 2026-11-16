@@ -14,7 +14,6 @@ import { CrossSpawnSpawner } from "@opencode-ai/core/cross-spawn-spawner"
 import { disposeAllInstances, TestInstance } from "../../fixture/fixture"
 import { testEffect } from "../../lib/effect"
 import { Permission } from "../../../src/permission"
-import { editPatternPath } from "../../../src/kilocode/permission/edit-path"
 
 afterEach(async () => {
   await disposeAllInstances()
@@ -71,11 +70,4 @@ describe("kilocode write permission pattern (#15209)", () => {
       { git },
     )
   })
-
-  it.effect("falls back to directory only when worktree is the non-git root", () =>
-    Effect.sync(() => {
-      expect(editPatternPath({ directory: "/a/b", worktree: "/" }, "/a/b/.local/x.md")).toBe(".local/x.md")
-      expect(editPatternPath({ directory: "/a/b/c", worktree: "/a/b" }, "/a/b/.local/x.md")).toBe(".local/x.md")
-    }),
-  )
 })

@@ -270,7 +270,7 @@ function baseline(
 }
 
 // Upstream v1.14.33 builds Agent state outside the Instance ALS, so reading
-// Instance.worktree here would crash. Thread worktree through from patchAgents
+// Instance.worktree here would crash. Thread the edit pattern root (see editPatternRoot) from patchAgents
 // instead.
 function planEditRules(worktree: string) {
   return {

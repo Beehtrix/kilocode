@@ -229,7 +229,7 @@ export const ApplyPatchTool = Tool.define(
       }))
 
       // Check permissions if needed
-      const relativePaths = fileChanges.map((c) => editPatternPath(instance, c.filePath).replaceAll("\\", "/")) // kilocode_change
+      const relativePaths = fileChanges.map((c) => editPatternPath(instance, c.filePath)) // kilocode_change
       yield* ctx.ask({
         permission: "edit",
         patterns: relativePaths,
