@@ -15,6 +15,7 @@ import { FileSystem } from "@opencode-ai/core/filesystem"
 import { filterDiagnostics } from "./diagnostics" // kilocode_change
 import { ConfigValidation } from "../kilocode/config-validation" // kilocode_change
 import * as EncodedIO from "../kilocode/tool/encoded-io" // kilocode_change
+import { editPatternPath } from "../kilocode/permission/edit-path" // kilocode_change
 import { Format } from "../format"
 import * as Bom from "@/util/bom"
 import { assertMutablePath } from "../kilocode/agent-manager/protection" // kilocode_change
@@ -228,7 +229,7 @@ export const ApplyPatchTool = Tool.define(
       }))
 
       // Check permissions if needed
-      const relativePaths = fileChanges.map((c) => path.relative(instance.worktree, c.filePath).replaceAll("\\", "/"))
+      const relativePaths = fileChanges.map((c) => editPatternPath(instance, c.filePath)) // kilocode_change
       yield* ctx.ask({
         permission: "edit",
         patterns: relativePaths,

@@ -28,6 +28,7 @@ import * as Option from "effect/Option"
 import * as OtelTracer from "@effect/opentelemetry/Tracer"
 import type { DeepMutable } from "@opencode-ai/core/schema" // kilocode_change
 // kilocode_change start
+import { editPatternRoot } from "@/kilocode/permission/edit-path"
 import * as KiloAgent from "@/kilocode/agent"
 import { RuntimeFlags } from "@/effect/runtime-flags"
 import * as KiloReference from "@/kilocode/reference"
@@ -199,7 +200,7 @@ const layer = Layer.effect(
                 edit: {
                   "*": "deny",
                   [path.join(".opencode", "plans", "*.md")]: "allow",
-                  [path.relative(ctx.worktree, path.join(Global.Path.data, path.join("plans", "*.md")))]: "allow",
+                  [path.relative(editPatternRoot(ctx), path.join(Global.Path.data, path.join("plans", "*.md")))]: "allow", // kilocode_change
                 },
               }),
               user,
@@ -325,7 +326,7 @@ const layer = Layer.effect(
         }
 
         // kilocode_change start - rename build→code, add debug/orchestrator/ask, patch plan/explore
-        KiloAgent.patchAgents(agents, defaults, user, kilo, ctx.worktree, whitelistedDirs)
+        KiloAgent.patchAgents(agents, defaults, user, kilo, editPatternRoot(ctx), whitelistedDirs)
 
         const agentConfigs = KiloAgent.preprocessConfig(cfg.agent ?? {})
         for (const [key, value] of Object.entries(agentConfigs)) {
@@ -362,7 +363,7 @@ const layer = Layer.effect(
           item.permission = Permission.merge(item.permission, Permission.fromConfig(value.permission ?? {}))
           // kilocode_change start
           KiloAgent.processConfigItem(item)
-          KiloAgent.hardenPlan(key, item, ctx.worktree, user, Permission.fromConfig(value.permission ?? {}))
+          KiloAgent.hardenPlan(key, item, editPatternRoot(ctx), user, Permission.fromConfig(value.permission ?? {}))
           KiloAgent.hardenExplore(key, item, user, Permission.fromConfig(value.permission ?? {}))
         }
 
